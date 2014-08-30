@@ -7,6 +7,7 @@ package controllers
 import akka.util.Timeout
 import play.api.mvc.Controller
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 class WebSocketController extends Controller {
   def jsonApp = "application/json"
