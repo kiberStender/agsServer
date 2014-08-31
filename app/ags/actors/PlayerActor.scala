@@ -4,7 +4,7 @@ package ags.actors
  * Created by sirkleber on 30/08/14.
  */
 
-import ags.messages.PlayerConnect
+import ags.messages.{PlayerDisconnect, PlayerConnect}
 import akka.actor.Actor
 import models.Player
 import play.api.libs.json.Json
@@ -23,6 +23,8 @@ class PlayerActor extends Actor{
       }
       case Some(id) => id
     }))
+
+    case PlayerDisconnect(ip) => disconnect(ip)
   }
 
   private lazy val players: Map[Int, Player] = Map()
@@ -32,6 +34,13 @@ class PlayerActor extends Actor{
   def add(ip: String): Int = {
     waitingLine += (ip -> (waitingLine.size + 1))
     waitingLine.size
+  }
+
+  def disconnect(ip: String) = waitingLine get ip match {
+    case None => "No IP related"
+    case Some(id) =>
+      waitingLine -= ip
+      s"ID -> $id <--> IP -> $ip"
   }
 
 }
