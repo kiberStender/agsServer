@@ -4,7 +4,7 @@ package ags.actors
  * Created by sirkleber on 30/08/14.
  */
 
-import ags.messages.{PlayerDisconnect, PlayerConnect}
+import ags.messages._
 import akka.actor.Actor
 import models.Player
 import play.api.libs.json.Json
@@ -25,6 +25,17 @@ class PlayerActor extends Actor{
     }))
 
     case PlayerDisconnect(ip) => disconnect(ip)
+
+    case PlayerMessage(id) => sender ! (players get id match {
+      case None => PlayerNotConnected
+      case Some(_) => PlayerNotConnected
+    })
+
+    case AddPLayer(id, ip, channel) => sender ! (waitingLine get ip match {
+      case None => ((), s"Player ID: $id, not previously connected")
+      case Some(id_) =>
+        (players += (id_ -> Player(id_, ip, channel)), s"Player ID: $id_, connected")
+    })
   }
 
   private lazy val players: Map[Int, Player] = Map()
