@@ -18,23 +18,30 @@ import scala.concurrent.duration._
  */
 
 case class Player(id: Int, ip: String, channel: Channel[JsValue]) {
+  private type State = (Unit, String)
   private lazy val robot = new Robot
   private implicit val timeout = Timeout(5 second)
 
-  private def keyMngr[A](key: Option[Int])(f: Int => A): Either[String, A] = key match {
-    case Some(k) => Right(f(k))
-    case None => Left("Tecla não encontrada") //false
+  private def keyMngr: Option[Int] => (Int => Unit) => State = key => f => key match {
+    case Some(k) => (f(k), "")
+    case None => ((), "Key not found")
   }
 
-  def press(optKeys: Option[Seq[Key]]): Seq[Either[String, Unit]] = optKeys match {
-    case None => Seq(Left("NoKey"))
+  def press(optKeys: Option[Seq[Key]]): State = {
 
-    case Some(keys) => for {
+    def concatLog: State => State => State = log => log2 => ((), log._2 + ", " + log2._2)
+
+    def keyPresser: Seq[Key] => State => State = keys => log => (for {
       key <- keys
     } yield key match {
-        case Key(key, "pressed") => keyMngr(Command getKey key) (robot keyPress)
-        case Key(key, "released") => keyMngr(Command getKey key) (robot keyRelease)
-      }
+        case Key(_key, "pressed") => concatLog(log)(keyMngr(Command getKey _key)(robot keyPress))
+        case Key(_key, "released") => concatLog(log)(keyMngr(Command getKey _key)(robot keyRelease))
+      }).head
+
+    optKeys match {
+      case None => ((), "NoKey")
+      case Some(keys) => keyPresser(keys) ((), "")
+    }
   }
 
   def sendCmd(cmd: Option[JsValue]): Future[String] = cmd match {
