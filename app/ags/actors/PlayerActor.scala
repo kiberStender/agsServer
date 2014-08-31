@@ -7,24 +7,25 @@ package ags.actors
 import ags.messages._
 import akka.actor.Actor
 import models.Player
-import play.api.libs.json.Json
 import scala.language.postfixOps
 import scala.collection.mutable.Map
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class PlayerActor extends Actor{
+class PlayerActor extends Actor {
   def receive = {
-    case PlayerConnect(ip) => sender ! Json.obj("id" -> (waitingLine get ip match {
+    case PlayerConnect(ip) => sender ! (waitingLine get ip match {
       case None => (for {
         (_, Player(id, ip_, _)) <- players
         if ip_ == ip
       } yield id).headOption match {
         case None => add(ip)
-        case Some(id) => id
+        case Some(id) => ((), id)
       }
-      case Some(id) => id
-    }))
+      case Some(id) => ((), id)
+    })
 
-    case PlayerDisconnect(ip) => disconnect(ip)
+    case PlayerDisconnect(ip) => sender ! disconnect(ip)
 
     case PlayerMessage(id) => sender ! (players get id match {
       case None => PlayerNotConnected
@@ -33,8 +34,14 @@ class PlayerActor extends Actor{
 
     case AddPLayer(id, ip, channel) => sender ! (waitingLine get ip match {
       case None => ((), s"Player ID: $id, not previously connected")
-      case Some(id_) =>
-        (players += (id_ -> Player(id_, ip, channel)), s"Player ID: $id_, connected")
+      case Some(id_) => (players += (id_ -> Player(id_, ip, channel)), s"Player ID: $id_, connected")
+    })
+
+    case Command(id, keys, commands) => sender ! (players get id match {
+      case None => Future(((), true))
+      case Some(player) => ((for {
+        clog <- player sendCmd commands
+      } yield (player press keys)._2 + " " + clog), false)
     })
   }
 
@@ -42,16 +49,14 @@ class PlayerActor extends Actor{
 
   private lazy val waitingLine: Map[String, Int] = Map()
 
-  def add(ip: String): Int = {
+  def add(ip: String): (Unit, Int) = {
     waitingLine += (ip -> (waitingLine.size + 1))
-    waitingLine.size
+    ((), waitingLine.size)
   }
 
   def disconnect(ip: String) = waitingLine get ip match {
-    case None => "No IP related"
-    case Some(id) =>
-      waitingLine -= ip
-      s"ID -> $id <--> IP -> $ip"
+    case None => ((), "No IP related")
+    case Some(id) => ((waitingLine -= ip), s"ID -> $id <--> IP -> $ip")
   }
 
 }
