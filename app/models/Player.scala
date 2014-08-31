@@ -9,6 +9,9 @@ import play.api.libs.json.JsValue
 import akka.pattern.ask
 import scala.language.postfixOps
 import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+import akka.util.Timeout
+import scala.concurrent.duration._
 
 /**
  * Created by sirkleber on 30/08/14.
@@ -16,6 +19,7 @@ import scala.concurrent.Future
 
 case class Player(id: Int, ip: String, channel: Channel[JsValue]) {
   private lazy val robot = new Robot
+  private implicit val timeout = Timeout(5 second)
 
   private def keyMngr[A](key: Option[Int])(f: Int => A): Either[String, A] = key match {
     case Some(k) => Right(f(k))
@@ -35,7 +39,7 @@ case class Player(id: Int, ip: String, channel: Channel[JsValue]) {
 
   def sendCmd(cmd: Option[JsValue]): Future[String] = cmd match {
     case None => Future("NoCommand")
-    case Some(command) => for{
+    case Some(command) => for {
       value <- Actors.game ? GameData(command)
     } yield s"$value executed"
   }
