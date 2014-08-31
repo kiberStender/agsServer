@@ -22,6 +22,6 @@ case class NewPlayer(id: Int)
 
 case class AddPLayer(id: Int, ip: String, channel: Channel[JsValue])
 
-case class Command(id: Int, keys: Option[Array[Key]], commands: Option[JsValue])
+case class Command(id: Int, keys: Option[Seq[Key]], commands: Option[JsValue])
 
 case class Quit(ip: String)
