@@ -2,13 +2,18 @@ package models
 
 import java.awt.Robot
 
+import ags.actors.Actors
+import ags.messages.GameData
 import play.api.libs.iteratee.Concurrent.Channel
 import play.api.libs.json.JsValue
+import akka.pattern.ask
 import scala.language.postfixOps
+import scala.concurrent.Future
 
 /**
  * Created by sirkleber on 30/08/14.
  */
+
 case class Player(id: Int, ip: String, channel: Channel[JsValue]) {
   private lazy val robot = new Robot
 
@@ -26,6 +31,13 @@ case class Player(id: Int, ip: String, channel: Channel[JsValue]) {
         case Key(key, "pressed") => keyMngr(Command getKey key) (robot keyPress)
         case Key(key, "released") => keyMngr(Command getKey key) (robot keyRelease)
       }
+  }
+
+  def sendCmd(cmd: Option[JsValue]): Future[String] = cmd match {
+    case None => Future("NoCommand")
+    case Some(command) => for{
+      value <- Actors.game ? GameData(command)
+    } yield s"$value executed"
   }
 
   def getId: Int = id
