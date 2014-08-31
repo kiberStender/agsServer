@@ -38,11 +38,16 @@ class PlayerActor extends Actor {
     })
 
     case Command(id, keys, commands) => sender ! (players get id match {
-      case None => Future(((), true))
+      case None => ((), true)
       case Some(player) => ((for {
         clog <- player sendCmd commands
       } yield (player press keys)._2 + " " + clog), false)
     })
+
+    case GetPlayerData(id, data) =>  players get id match {
+      case None => ((), "Data sent to non existent player")
+      case Some(Player(_, _, channel)) => (channel push data, "")
+    }
   }
 
   private lazy val players: Map[Int, Player] = Map()
