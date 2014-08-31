@@ -14,4 +14,5 @@ import scala.language.postfixOps
 object Actors {
   implicit val timeout = Timeout(3 second)
   lazy val players = Akka.system.actorOf(Props[PlayerActor])
+  lazy val game = Akka.system.actorOf(Props[GameActor])
 }
