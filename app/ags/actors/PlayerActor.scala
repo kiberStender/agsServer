@@ -38,7 +38,7 @@ class PlayerActor extends Actor {
     })
 
     case Command(id, keys, commands) => sender ! (players get id match {
-      case None => ((), true)
+      case None => (Future(""), true)
       case Some(player) => ((for {
         clog <- player sendCmd commands
       } yield (player press keys)._2 + " " + clog), false)
