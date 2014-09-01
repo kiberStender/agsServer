@@ -44,24 +44,36 @@ class PlayerActor extends Actor {
       } yield (player press keys)._2 + " " + clog), false)
     })
 
-    case GetPlayerData(id, data) =>  players get id match {
+    case GetPlayerData(id, data) => sender !  (players get id match {
       case None => ((), "Data sent to non existent player")
       case Some(Player(_, _, channel)) => (channel push data, "")
-    }
+    })
+
+    case Quit(ip) => sender ! (getPlayerByIp(ip) match {
+      case None => ((), "Unknown Player")
+      case Some((Player(id, _, _))) => ((add andThen remove)(ip), s"ID -> $id <--> IP -> $ip")
+    })
   }
 
   private lazy val players: Map[Int, Player] = Map()
 
   private lazy val waitingLine: Map[String, Int] = Map()
 
-  def add(ip: String): (Unit, Int) = {
+  def add: String => (Unit, Int) = ip => {
     waitingLine += (ip -> (waitingLine.size + 1))
     ((), waitingLine.size)
   }
 
-  def disconnect(ip: String) = waitingLine get ip match {
+  def remove: ((Unit, Int)) => Unit = p => players -= p._2
+
+  def disconnect: String => (Unit, String) = ip => waitingLine get ip match {
     case None => ((), "No IP related")
     case Some(id) => ((waitingLine -= ip), s"ID -> $id <--> IP -> $ip")
   }
+
+  private def getPlayerByIp: String => Option[Player] = ip => (for {
+    (_, Player(id, ip_, channel)) <- players
+    if ip == ip_
+  } yield Player(id, ip_, channel)).headOption
 
 }
