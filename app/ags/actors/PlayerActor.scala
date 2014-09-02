@@ -59,10 +59,7 @@ class PlayerActor extends Actor {
 
   private lazy val waitingLine: Map[String, Int] = Map()
 
-  def add: String => (Unit, Int) = ip => {
-    waitingLine += (ip -> (waitingLine.size + 1))
-    ((), waitingLine.size)
-  }
+  def add: String => (Unit, Int) = ip => (waitingLine += (ip -> (waitingLine.size + 1)), waitingLine.size)
 
   def remove: ((Unit, Int)) => Unit = p => players -= p._2
 
