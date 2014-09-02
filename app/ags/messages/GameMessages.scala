@@ -7,13 +7,13 @@ import play.api.libs.json.JsValue
  * Created by sirkleber on 01/09/14.
  */
 
-trait GameStatus
+sealed trait GameStatus
 
 case class GameConnected() extends GameStatus
 
-case class GameNotConnected() extends GameStatus
-
 case class GameCannotConnect() extends GameStatus
+
+case class GameNotConnected()
 
 case class GameConnect(ip: String, nome: String, channel: Channel[JsValue])
 
