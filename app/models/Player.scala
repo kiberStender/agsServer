@@ -33,9 +33,11 @@ case class Player(id: Int, ip: String, channel: Channel[JsValue]) {
 
     def keyPresser: Seq[Key] => State => State = keys => log => (for {
       key <- keys
+      cat = concatLog(log)
+      cmdKey = Command getKey _
     } yield key match {
-        case Key(_key, "pressed") => concatLog(log)(keyMngr(Command getKey _key)(robot keyPress))
-        case Key(_key, "released") => concatLog(log)(keyMngr(Command getKey _key)(robot keyRelease))
+        case Key(_key, "pressed") => cat(keyMngr(cmdKey(_key))(robot keyPress))
+        case Key(_key, "released") => cat(keyMngr(cmdKey(_key))(robot keyRelease))
       }).head
 
     optKeys match {
