@@ -15,13 +15,13 @@ import play.api.libs.json._
 object ControllerWebSocket extends WebSocketController {
 
   def connect = Action.async { req =>
-    (Actors.players ? PlayerConnect(req.remoteAddress)).mapTo[JsValue].map{ res =>
-      Ok(res) as jsonApp
+    (Actors.players ? PlayerConnect(req.remoteAddress)).mapTo[(Unit, Int)].map{
+      case ((_, id)) => Ok("" + id) as jsonApp
     }
   }
 
   def disconnect = Action.async {req =>
-    (Actors.players ? PlayerDisconnect(req.remoteAddress)).mapTo[JsValue].map { _ =>
+    (Actors.players ? PlayerDisconnect(req.remoteAddress)).mapTo[(Unit, String)].map { _ =>
       Ok(Json.obj("disconnect" -> true)) as jsonApp
     }
   }
