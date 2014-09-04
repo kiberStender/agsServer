@@ -3,7 +3,6 @@ package ags.actors
 import ags.messages._
 import akka.actor.Actor
 import models.Game
-import play.api.libs.json.Json
 import scala.collection.mutable.Map
 import scala.language.postfixOps
 

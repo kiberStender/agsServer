@@ -15,8 +15,7 @@ import play.api.libs.json._
 import play.api.mvc.WebSocket
 import models.Key
 import Actors.players
-
-import scala.concurrent.Future
+import ags.readers.AgsReader._
 
 object ControllerWebSocket extends WebSocketController {
 
