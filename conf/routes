@@ -11,11 +11,11 @@ GET     /controller/connect         controllers.ControllerWebSocket.connect
 
 GET     /controller/disconnect      controllers.ControllerWebSocket.disconnect
 
-GET     /controller/command/:id     controllers.ControllerApplication.command(id: Int)
+GET     /controller/command/:id     controllers.ControllerWebSocket.command(id: Int)
 
 # Game websocket
 
-GET     /game/consume               controllers.GameApplication.consume
+GET     /game/consume               controllers.GameWebSocket.consume
 
 # Map static resources from the /public folder to the /assets URL path
 # GET     /assets/*file               controllers.Assets.at(path="/public", file)
