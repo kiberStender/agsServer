@@ -10,6 +10,6 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 abstract class WebSocketController extends Controller {
-  def jsonApp = "application/json"
-  implicit def timeout = Timeout(5 second)
+  protected def jsonApp = "application/json"
+  protected implicit def timeout = Timeout(5 second)
 }
