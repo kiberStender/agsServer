@@ -11,5 +11,7 @@ GET     /controller/connect         controllers.ControllerWebSocket.connect
 
 GET     /controller/disconnect      controllers.ControllerWebSocket.disconnect
 
+GET     /controller/command/:id     controllers.ControllerApplication.command(id: Int)
+
 # Map static resources from the /public folder to the /assets URL path
 # GET     /assets/*file               controllers.Assets.at(path="/public", file)
