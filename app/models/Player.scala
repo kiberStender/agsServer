@@ -21,12 +21,12 @@ case class Player(id: Int, ip: String, channel: Channel[JsValue]) {
   private type State = (Unit, String)
   private lazy val robot = new Robot
   private implicit val timeout = Timeout(5 second)
-
-  private def keyMngr: Option[Int] => (Int => Unit) => State = key => f => key match {
-    case Some(k) => (f(k), "")
-    case None => ((), "Key not found")
+  
+  private def keyMngr: Option[Int] => (Int => Unit) => State  = {
+    case Some(k) => f => (f(k), "")
+    case None => _ => ((), "Key not found")
   }
-
+  
   def press(optKeys: Option[Seq[Key]]): State = {
 
     def concatLog: State => State => State = log => log2 => ((), log._2 + ", " + log2._2)
